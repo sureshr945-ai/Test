@@ -1,0 +1,75 @@
+import java.util.*;
+
+public class Solution1_GreedyWithSortedIndices {
+    
+    public int[] solution(int[] A) {
+        int n = A.length;
+        int[] B = new int[n];
+        
+        // Step 1: Create array of indices
+        Integer[] indices = new Integer[n];
+        for (int i = 0; i < n; i++) {
+            indices[i] = i;
+        }
+        
+        // Step 2: Sort indices by A values in descending order
+        // This ensures we process buildings with highest constraints first
+        Arrays.sort(indices, (i, j) -> Integer.compare(A[j], A[i]));
+        
+        // Step 3: Assign heights greedily
+        // nextHeight starts at MAX_VALUE to ensure first building gets its full height
+        int nextHeight = Integer.MAX_VALUE;
+        for (int idx : indices) {
+            // Assign the maximum possible height that satisfies:
+            // 1. B[idx] <= A[idx] (constraint of this building)
+            // 2. B[idx] <= nextHeight - 1 (ensure uniqueness from previous)
+            // 3. B[idx] > 0 (must be positive)
+            B[idx] = Math.min(A[idx], nextHeight - 1);
+            nextHeight = B[idx];  // Update for next iteration
+        }
+        
+        return B;
+    }
+    
+    // Validation helper
+    static boolean isValid(int[] A, int[] B) {
+        Set<Integer> heights = new HashSet<>();
+        for (int i = 0; i < A.length; i++) {
+            if (B[i] <= 0 || B[i] > A[i]) return false;
+            if (heights.contains(B[i])) return false;
+            heights.add(B[i]);
+        }
+        return true;
+    }
+    
+    public static void main(String[] args) {
+        Solution1_GreedyWithSortedIndices sol = new Solution1_GreedyWithSortedIndices();
+        
+        // Test 1: Basic case
+        int[] A1 = {1, 2, 3};
+        int[] B1 = sol.solution(A1);
+        System.out.println("Test 1: " + Arrays.toString(A1) + " → " + Arrays.toString(B1));
+        System.out.println("Valid: " + isValid(A1, B1) + "\n");
+        
+        // Test 2: With duplicates
+        int[] A2 = {9, 4, 3, 7, 7};
+        int[] B2 = sol.solution(A2);
+        System.out.println("Test 2: " + Arrays.toString(A2) + " → " + Arrays.toString(B2));
+        System.out.println("Valid: " + isValid(A2, B2) + "\n");
+        
+        // Test 3: Multiple same values
+        int[] A3 = {2, 5, 4, 5, 5};
+        int[] B3 = sol.solution(A3);
+        System.out.println("Test 3: " + Arrays.toString(A3) + " → " + Arrays.toString(B3));
+        System.out.println("Valid: " + isValid(A3, B3) + "\n");
+        
+        // Test 4: Large scale
+        int[] A4 = new int[100000];
+        Arrays.fill(A4, 1000);
+        long start = System.nanoTime();
+        int[] B4 = sol.solution(A4);
+        long time = System.nanoTime() - start;
+        System.out.println("Test 4 (100K elements): Time = " + (time / 1_000_000.0) + "ms");
+        System.out.println("Valid: " + isValid(A4, B4));
+    }
+}
